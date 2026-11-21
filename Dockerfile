@@ -1,14 +1,9 @@
-FROM alpine:3.20 AS builder
+FROM alpine:3.24 AS builder
 
 WORKDIR /tmp
 
 # Install required packages
-RUN apk update \
-    && apk add --no-cache linux-headers alpine-sdk cmake tcl openssl-dev zlib-dev spdlog spdlog-dev sqlite-dev \
-    && rm -rf /var/cache/apk/* \
-    && git clone https://github.com/yhirose/cpp-httplib.git /tmp/cpp-httplib \
-    && cp /tmp/cpp-httplib/httplib.h /usr/include/ \
-    && rm -rf /tmp/cpp-httplib
+RUN apk add --no-cache linux-headers alpine-sdk cmake tcl openssl-dev zlib-dev sqlite-dev
 
 # Clone, build and install SRT with the SRTLA patches, pinned to one commit
 ARG SRT_REPO=https://github.com/lee89tw14/srt.git
@@ -26,20 +21,18 @@ RUN cd srt-live-server \
     && make -j$(nproc)
 
 # Runtime image
-FROM alpine:3.20
+FROM alpine:3.24
 
 ENV LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib64
 
-# Install runtime dependencies
-RUN apk update \
-    && apk add --no-cache openssl libstdc++ supervisor coreutils procps net-tools sqlite sqlite-dev \
-    && rm -rf /var/cache/apk/*
+# Install runtime dependencies: only the shared libraries sls and libsrt link against
+RUN apk upgrade --no-cache \
+    && apk add --no-cache libstdc++ libcrypto3 sqlite-libs zlib
 
 # Copy binaries from the builder stage
 COPY --from=builder /tmp/srt-live-server/bin /usr/local/bin
 COPY --from=builder /usr/local/bin/srt-* /usr/local/bin
 COPY --from=builder /usr/local/lib/libsrt* /usr/local/lib
-COPY --from=builder /usr/include/httplib.h /usr/include/
 
 # copy configuration files
 COPY sls.conf /etc/sls/
