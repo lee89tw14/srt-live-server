@@ -10,9 +10,12 @@ RUN apk update \
     && cp /tmp/cpp-httplib/httplib.h /usr/include/ \
     && rm -rf /tmp/cpp-httplib
 
-# Clone, build and install belabox-patched SRT
-RUN git clone https://github.com/OpenIRL/srt.git srt \
+# Clone, build and install SRT with the SRTLA patches, pinned to one commit
+ARG SRT_REPO=https://github.com/lee89tw14/srt.git
+ARG SRT_REF=3a5cd1aab55e5e73f98046372df33e3a73adfce7
+RUN git clone ${SRT_REPO} srt \
     && cd srt \
+    && git checkout ${SRT_REF} \
     && ./configure \
     && make -j$(nproc) \
     && make install
