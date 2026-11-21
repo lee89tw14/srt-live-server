@@ -41,8 +41,9 @@ IMPORTANT: Save this key securely. It will not be shown again.
 
 ### Ports
 
-- `4000/udp`: Publisher port (SRT input)
-- `4001/udp`: Player port (SRT output)
+- `4000/udp`: Player port (SRT output)
+- `4001/udp`: Publisher port (SRT input)
+- `4002/udp`: Publisher port for an SRTLA receiver such as `srtla_rec` (`listen_publisher_srtla`; not published by `docker-compose.yml`)
 - `8080/tcp`: HTTP API port
 
 ## API Usage
@@ -129,7 +130,7 @@ srt://hostname:4000?streamid=player_id
 
 ## Security Considerations
 
-1. **Change Default API Key**: The default admin key should be changed immediately
+1. **Protect the Admin API Key**: It is printed once, on first start. More keys can be created with `POST /api/keys`; the API cannot list or revoke keys
 2. **Use HTTPS**: In production, use a reverse proxy with SSL/TLS
 3. **Network Security**: Restrict API access to trusted networks
 4. **Regular Backups**: Backup the SQLite database regularly
@@ -155,7 +156,7 @@ Receive it with OBS or VLC: `srt://hostname:4000?streamid=player_id`
 
 ## Support
 
-For issues and feature requests, please use the GitHub issue tracker.
+The issue tracker of this fork is disabled. Open a pull request on GitHub for fixes.
 
 ## License
 

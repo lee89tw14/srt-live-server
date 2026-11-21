@@ -36,9 +36,11 @@ GET /health
 {
   "status": "ok",
   "service": "srt-live-server",
-  "version": "1.6.0"
+  "version": "1.5.0"
 }
 ```
+
+`version` is a constant in `slscore/version.hpp`. It has stayed at `1.5.0` through the 1.5.x releases, so it does not identify the build.
 
 ### Stream IDs Management
 
@@ -128,13 +130,14 @@ Get real-time statistics for a specific publisher (using player ID).
 **Parameters:**
 - `player_id` (path) - The player ID associated with the publisher
 - `reset` (query, optional) - Reset statistics after retrieval
-- `legacy` (query, optional) - Use legacy format with detailed information (set to "1")
+- `legacy` (query, optional) - Deprecated. Set to "1" for the old format shown below
 
 **Response:**
 ```json
 {
   "publisher": {
     "bitrate": 16363,
+    "throughput": 16800,
     "buffer": 1995,
     "dropped_pkts": 45,
     "rtt": 30.2,
@@ -145,6 +148,8 @@ Get real-time statistics for a specific publisher (using player ID).
 }
 ```
 
+For a publisher that arrives through SRTLA, `publisher` also has a `peers` array with one entry per link. [README.md](README.md) describes its fields.
+
 <details>
 <summary>Legacy Format with `legacy=1`</summary>
 
@@ -153,13 +158,14 @@ Get real-time statistics for a specific publisher (using player ID).
   "publishers": {
     "live": {
       "bitrate": 16363,
-      "bytes_rcv_drop": 0,
-      "bytes_rcv_loss": 0,
-      "mbps_bandwidth": 2.1,
-      "mbps_recv_rate": 2.4,
-      "ms_rcv_buf": 1984,
-      "pkt_rcv_drop": 0,
-      "pkt_rcv_loss": 0,
+      "throughput": 2400,
+      "bytesRcvDrop": 0,
+      "bytesRcvLoss": 0,
+      "mbpsBandwidth": 2.1,
+      "mbpsRecvRate": 2.4,
+      "msRcvBuf": 1984,
+      "pktRcvDrop": 0,
+      "pktRcvLoss": 0,
       "rtt": 30.2,
       "uptime": 3600,
       "latency": 2000
@@ -201,6 +207,8 @@ Content-Type: application/json
 }
 ```
 
+There is no endpoint to list or revoke keys.
+
 ## Rate Limiting
 
 The API implements rate limiting to prevent abuse. Each endpoint type has its own separate rate limit:
@@ -239,6 +247,18 @@ When rate limit is exceeded:
 
 ## Error Responses
 
+### 400 Bad Request
+```json
+{
+  "status": "error",
+  "message": "Invalid JSON body"
+}
+```
+
+### 413 Payload Too Large
+
+A request body over 64 KiB is rejected before any handler runs. The response has no body.
+
 ### 401 Unauthorized
 ```json
 {
@@ -273,7 +293,7 @@ When rate limit is exceeded:
 
 ## Database Schema
 
-The SQLite database (`/etc/sls/streams.db`) contains:
+The SQLite database (`database_path` in `sls.conf`, default `/var/lib/sls/streams.db`) contains:
 
 ### stream_ids table
 - `id`: Primary key
