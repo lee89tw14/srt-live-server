@@ -17,7 +17,7 @@ SRT Live Server (sls) is a low latency streaming server that is using SRT (Secur
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/OpenIRL/srt-live-server.git
+git clone https://github.com/lee89tw14/srt-live-server.git
 cd srt-live-server
 ```
 
