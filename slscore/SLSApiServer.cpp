@@ -53,6 +53,10 @@ bool CSLSApiServer::init(sls_conf_srt_t* conf, CSLSManager* manager) {
     sls_log(SLS_LOG_INFO, "[CSLSApiServer] Rate limits configured: api=%d/min, stats=%d/min, config=%d/min",
             m_rate_limit_config["api"], m_rate_limit_config["stats"], m_rate_limit_config["config"]);
     
+    // Request bodies are small JSON objects. The library default is 100 MB, and a
+    // body is read before any handler can check the API key.
+    m_server.set_payload_max_length(64 * 1024);
+
     setupEndpoints();
     return true;
 }
